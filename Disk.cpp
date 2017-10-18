@@ -1,30 +1,37 @@
 #include "Disk.h"
-#include <fstream>
-#include <cmath>
+
 Disk :: Disk(const char * path){
 	this->path = path;
+	this->myFile = new std::fstream(path, std::fstream::binary | std::fstream::out | std::fstream::in | ios::trunc);
+
+	if(!myFile->is_open()){
+		perror("Error opening disk");
+		exit(-1);
+	}
 }
 void Disk:: createDisk(int bytes){
-	ofstream myFile;
-	myFile.open(path);
-	if(bytes % 4096 == 0)
-	 myFile.seekp(bytes - 1);
-	else
-		// myFile.seekp(ceil(+(bytes / 4096 ))*4096);
-		myFile.seekp((bytes)+ (4096 - (bytes % 4096))-1);
 
-	myFile<<'.';
-	myFile.close();
+	if(bytes % 4096 == 0)
+		myFile->seekp(bytes - 1);
+	else
+		// myFile.seekp(std::ceil(+(bytes / 4096 ))*4096);
+		myFile->seekp((bytes)+ (4096 - (bytes % 4096))-1);	
+	myFile->write("", 1);	
+	myFile->flush();
 }
-void Disk:: readBlock(unsigned int blockNumber,void *buffer){
-  ifstream myFile(path, std::ifstream::in);;
-  myFile.seekg(blockNumber * 4096 ,std::ios::beg );
-  myFile.read((char*)buffer,4096);
-  myFile.close();	 
+void Disk:: readBlock( int blockNumber,void *buffer){
+  myFile->seekg(blockNumber * 4096 ,std::ios::beg );
+  myFile->read((char*)buffer,4096);
+	 
 }
-void Disk:: writeBlock(unsigned int blockNumber,void *buffer){
-	ofstream myFile(path, ofstream::out | ofstream::app);
-	myFile.seekp(blockNumber * 4096 );
-	myFile<< (char *)buffer;
-	myFile.close();
+void Disk:: writeBlock( int blockNumber,void *buffer){
+	myFile->seekp((blockNumber * 4096) ,	ios	::	beg);
+	myFile->write((char *)buffer,4096);
+	myFile->flush();
+}
+unsigned int Disk::getSizeDisk(){
+	
+	myFile->seekg( 0, std::ios::end );
+	long int fsize = myFile->tellg();
+    return fsize;
 }

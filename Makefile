@@ -1,14 +1,14 @@
 TARGET=exemploClase
-SRCFILES = Disk.cpp main.cpp 
+SRCFILES = Disk.cpp FS.cpp main.cpp 
 OBJ_FILE = ${SRCFILES:.cpp=.o}
 
 .PHONY: clean 
 
 $(TARGET): $(OBJ_FILE)
-	g++ -std=c++11 -o $@ $(OBJ_FILE)
+	g++  -o $@ $(OBJ_FILE)
 
 %.o: %.cpp 
-	g++ -std=c++11 -c -o $@ $<
+	g++ -c -o $@ $<
 
 clean:
 	rm -f *.o
