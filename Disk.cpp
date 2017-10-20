@@ -2,7 +2,7 @@
 
 Disk :: Disk(const char * path){
 	this->path = path;
-	this->myFile = new std::fstream(path, std::fstream::binary | std::fstream::out | std::fstream::in | ios::trunc);
+	this->myFile = new std::fstream(path, std::fstream::binary | std::fstream::out | std::fstream::in);
 
 	if(!myFile->is_open()){
 		perror("Error opening disk");

@@ -1,5 +1,5 @@
 TARGET=exemploClase
-SRCFILES = Disk.cpp FS.cpp main.cpp 
+SRCFILES = Disk.cpp FS.cpp Bitmap.cpp main.cpp 
 OBJ_FILE = ${SRCFILES:.cpp=.o}
 
 .PHONY: clean 
