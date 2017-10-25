@@ -1,12 +1,13 @@
 #ifndef FS_H
 #define FS_H
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <cmath>
 #include <string.h>
-
 #include "Disk.h"
+#include "FS.h"
+#include "Bitmap.h"
+#include "SuperBlock.h"
 class FS{
    Disk * disk;
 public:

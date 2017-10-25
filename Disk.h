@@ -1,6 +1,7 @@
 #ifndef DISK_H
 #define DISK_H
 #include <stdio.h>
+
 #include <stdlib.h>
 #include <fstream>
 #include <cmath>
@@ -13,7 +14,8 @@ public :
 	void createDisk(int bytes);
 	void writeBlock( int blockNumber,void *buffer);
 	void readBlock( int blockNumber,void *buffer);
-	unsigned int getSizeDisk();
+	void close();
+	long int getSizeDisk();
 
 };
 #endif 

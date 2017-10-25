@@ -1,9 +1,9 @@
 #include "Bitmap.h"
 #include <iostream>
-Bitmap ::Bitmap(Disk * disk){
+Bitmap :: Bitmap(Disk * disk){
     char rootblock[4096];
     this->disk = disk;
-
+    
     disk->readBlock(1,rootblock);
     this->size = *((int *)rootblock);
 
@@ -14,6 +14,7 @@ Bitmap ::Bitmap(Disk * disk){
     
    
 }
+
 void Bitmap :: save(){
     
     for (int i=0;i<this->size;i++){
@@ -35,7 +36,7 @@ void Bitmap ::setBit(int numberBit,bool value){
 bool Bitmap :: getBit(int numberBit){
     int bytes = numberBit / 8;
     int bit = numberBit % 8;
-    return buffer[bytes] & 1 << bit?true:false;
+    return (buffer[bytes] & 1 << bit)? true:false;
          
 }
 
