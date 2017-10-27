@@ -16,6 +16,7 @@ public:
     unsigned int allocateBlock();
     void freeBlock(unsigned int numberBlock);
     unsigned int getTotalFreeBlock();
+    void printfBlockAllocate();
 };
 
 #endif

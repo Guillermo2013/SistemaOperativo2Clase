@@ -8,10 +8,7 @@ SuperBlock :: SuperBlock(Disk *disk){
     memcpy(&(this->bitMapBlockSize),buffer,sizeof(int));
     memcpy(&(this->BlockFree),&buffer[sizeof(int)],sizeof(int));
 }
-SuperBlock :: ~SuperBlock(){
- 
-    delete this->buffer;
-}
+
 void SuperBlock :: save(){
     this->buffer = (char*)malloc(4096);
     memcpy(buffer,&(this->bitMapBlockSize),sizeof(int));
