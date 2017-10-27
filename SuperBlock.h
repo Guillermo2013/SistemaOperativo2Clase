@@ -9,7 +9,7 @@ public:
     int bitMapBlockSize;
     int BlockFree;
     SuperBlock(Disk *disk);
-    ~SuperBlock();
+
     void save();
 };
 

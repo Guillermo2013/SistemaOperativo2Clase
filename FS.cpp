@@ -15,10 +15,6 @@ void FS :: format(){
   superBlock->BlockFree = std::ceil(+(sizeDisk   / 4096)) - superBlock->bitMapBlockSize - 2 ;
   superBlock->save();
   Bitmap * bitmap = new Bitmap(this->disk);
-
-  for(int i=0;i<superBlock->bitMapBlockSize*4096; i++){
-    bitmap->setBit(i,false);
-  }
   for(int i=0;i<superBlock->bitMapBlockSize +2; i++){
     bitmap->setBit(i,true);
   }
@@ -28,8 +24,6 @@ void FS :: format(){
   
 }
 unsigned int FS :: allocateBlock(){
-  
-  
    SuperBlock * superBlock = new SuperBlock(this->disk); 
    Bitmap * bitmap = new Bitmap(this->disk);
    unsigned int blockAllocate;
@@ -41,12 +35,11 @@ unsigned int FS :: allocateBlock(){
       }
      
    }
- 
    bitmap->save();
    superBlock->BlockFree--;
    superBlock->save();
-   superBlock->~SuperBlock();
-   bitmap->~Bitmap();
+   delete superBlock;
+   delete bitmap;
    return blockAllocate;
    
   }
@@ -54,12 +47,10 @@ void FS :: freeBlock(unsigned int numberBlock){
   SuperBlock * superBlock = new SuperBlock(this->disk);
   Bitmap * bitmap = new Bitmap(this->disk);
   if(bitmap->getBit(numberBlock) == true){
-    cout<<"freeblock if"<<endl;
     bitmap->setBit(numberBlock,false);
     superBlock->BlockFree++;
     superBlock->save();
     bitmap->save();
-    
   }
   delete bitmap;
   delete superBlock;
@@ -67,7 +58,7 @@ void FS :: freeBlock(unsigned int numberBlock){
 unsigned int FS :: getTotalFreeBlock(){
   SuperBlock * superBlock = new SuperBlock(this->disk);
   int cantidadLibre = superBlock->BlockFree;
-  superBlock->~SuperBlock();
+  delete superBlock;
   return cantidadLibre; 
 }
 void FS::printfBlockAllocate(){
@@ -78,5 +69,6 @@ void FS::printfBlockAllocate(){
           cout<<"bloque Alocado "<<i<<endl;
         }
     }
-
+  delete superBlock;
+  delete bitmap;
 }

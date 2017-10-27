@@ -9,10 +9,9 @@ int main(int argc, char const *argv[])
 	disk->createDisk(10*4096);
 	FS *fs = new FS(disk);
 	fs->format();
-	
-	//std::cout<<"bloque alocado "<<fs->allocateBlock()<<std::endl;
+	std::cout<<"bloque alocado "<<fs->allocateBlock()<<std::endl;
 	std::cout<<"cantidad de bloques libres "<<fs->getTotalFreeBlock()<<std::endl;
-	fs->freeBlock(3);
+	fs->freeBlock(5);
 	std::cout<<"cantidad de bloques libres "<<fs->getTotalFreeBlock()<<std::endl;
 	fs->printfBlockAllocate();
 	disk->close();
