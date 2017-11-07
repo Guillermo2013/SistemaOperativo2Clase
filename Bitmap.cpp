@@ -3,14 +3,12 @@
 Bitmap :: Bitmap(Disk * disk){
     char rootblock[4096];
     this->disk = disk;
-    
     disk->readBlock(1,rootblock);
     this->size = *((int *)rootblock);
     this->buffer = (char*)malloc(this->size*4096);
     for (int i=0;i<this->size;i++){
         disk->readBlock(i+2,buffer+i*4096);
     }
-
 }
 
 void Bitmap :: save(){

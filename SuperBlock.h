@@ -8,8 +8,8 @@ class SuperBlock{
 public:
     int bitMapBlockSize;
     int BlockFree;
+    int Blockroot;
     SuperBlock(Disk *disk);
-
     void save();
 };
 

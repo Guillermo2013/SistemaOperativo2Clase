@@ -1,5 +1,5 @@
 TARGET=exemploClase
-SRCFILES = SuperBlock.cpp Disk.cpp FS.cpp Bitmap.cpp  main.cpp 
+SRCFILES = SuperBlock.cpp Directory.cpp Disk.cpp FS.cpp Bitmap.cpp  main.cpp 
 OBJ_FILE = ${SRCFILES:.cpp=.o}
 
 .PHONY: clean 
