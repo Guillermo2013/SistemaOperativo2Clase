@@ -14,6 +14,6 @@ void SuperBlock :: save(){
     this->buffer = (char*)malloc(4096);
     memcpy(buffer,&(this->bitMapBlockSize),sizeof(int));
     memcpy(&buffer[sizeof(int)],&(this->BlockFree),sizeof(int));
-    memcpy(&buffer[sizeof(int)+sizeof(int)],&(this->BlockFree),sizeof(int));
+    memcpy(&buffer[sizeof(int)+sizeof(int)],&(this->Blockroot),sizeof(int));
     disk->writeBlock(1,buffer);
 }

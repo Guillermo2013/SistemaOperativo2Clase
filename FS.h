@@ -18,8 +18,8 @@ public:
     void format();
     unsigned int allocateBlock();
     void freeBlock(unsigned int numberBlock);
-    void mkdir(const char * path);
-    void ls(const char * path);
+    void mkdir(const char *name);
+    void ls(const char *name);
     unsigned int getTotalFreeBlock();
     void printfBlockAllocate();
 

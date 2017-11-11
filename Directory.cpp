@@ -9,29 +9,39 @@
 #define sizeInt sizeof(int)
 #define sizeName directorySize -sizeChar-sizeInt
 
-Directory :: Directory(Disk * disk,unsigned int Block){
-    this->disk = disk;
-    this->block = Block;
-    disk->readBlock(Block,this->buffer);
-    for(int i = 0;i<32;i++){
-        memcpy(&(this->directoryEntry[i].nombre),&(this->buffer[i*directorySize]),sizeName);
-        memcpy(&(this->directoryEntry[i].typeDirectory),&(this->buffer[(i*directorySize)+sizeName]),sizeChar);
-        memcpy(&(this->directoryEntry[i].block),&(this->buffer[(i*directorySize)+sizeName+sizeChar]),sizeInt);
-        
-    }
-    
+DirectoryEntry::DirectoryEntry(char* buffer){
+    memcpy(this->nombre,buffer,sizeName);
+    memcpy(&(this->typeDirectory),&buffer[sizeName],sizeChar);
+    memcpy(&(this->block),&buffer[sizeName+sizeChar],sizeInt);
 }
 
-
+void DirectoryEntry:: save(){
+    memcpy(buffer,this->nombre,sizeName);
+    memcpy(&buffer[sizeName],&(this->typeDirectory),sizeChar);
+    memcpy(&buffer[sizeName+sizeChar],&(this->block),sizeInt);
+}
+Directory::Directory(Disk *disk,  int Block){
+    this->disk =disk;
+    this->block = Block;
+    this->disk->readBlock(this->block,this->buffer);
+    for(int i = 0;i<4096/directorySize;i++){
+        this->directoryEntry[i] = new DirectoryEntry(buffer + (i*directorySize));
+    }
+}
 
 void Directory :: save(){
-    
-    for(int i = 0;i<32;i++){
-        
-        memcpy(&(this->buffer[i * directorySize]), &(this->directoryEntry[i].nombre[0]), sizeName);
-        memcpy(&(this->buffer[(i*directorySize)+sizeName]),&(this->directoryEntry[i].typeDirectory),sizeChar);
-        memcpy(&(this->buffer[(i*directorySize)+sizeName+sizeChar]),&(this->directoryEntry[i].block),sizeInt);
+    for(int i = 0;i<4096/directorySize;i++){
+        this->directoryEntry[i]->save();
+        memcpy(&(this->buffer[i*directorySize]),this->directoryEntry[i]->buffer,directorySize);
     }
-    
-    disk->writeBlock(this->block,this->buffer);
+    this->disk->writeBlock(this->block,this->buffer);
+}
+void Directory::format(){
+    for (int i = 0; i < 32; i++)
+    {
+        for (int j = 0; j < 123; j++)
+            this->directoryEntry[i]->nombre[j] = NULL;
+        this->directoryEntry[i]->typeDirectory = 'E';
+        this->directoryEntry[i]->block = -1;
+    }
 }
