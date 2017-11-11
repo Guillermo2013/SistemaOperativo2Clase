@@ -13,15 +13,19 @@ public:
     char nombre[sizeName];
     char typeDirectory;
     int block;
-
+    char buffer[128];
+    DirectoryEntry(char*buffer);
+    void save();
 };
 class Directory{
     Disk * disk;
-    unsigned int block;
+    
  public:    
     char buffer[4096];
-    DirectoryEntry  directoryEntry[32];
-    Directory(Disk * disk,unsigned int Block);
+     int block;
+    DirectoryEntry  *directoryEntry[32];
+    Directory(Disk * disk, int Block);
+    void format();
     void save();
 };
 

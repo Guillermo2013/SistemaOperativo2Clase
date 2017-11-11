@@ -23,15 +23,15 @@ void Bitmap ::setBit(int numberBit,bool value){
  int bytes = numberBit / 8;
  int bit = numberBit % 8;
  if(value != false){
-   buffer[bytes] |= value<<bit;
+   buffer[bytes] |= (value<<bit);
  }else{ 
-    buffer[bytes] ^= 1<<bit;
+    buffer[bytes] ^= (1<<bit);
  }
 }
 bool Bitmap :: getBit(int numberBit){
     int bytes = numberBit / 8;
     int bit = numberBit % 8;
-    return (this->buffer[bytes] & 1 << bit)? true:false;
+    return ((this->buffer[bytes]) & 1 << bit)? true:false;
          
 }
 
