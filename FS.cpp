@@ -88,16 +88,10 @@ void FS::printfBlockAllocate(){
 
 int split(const char *name,int acumulado)
 {
-  char nameArray[strlen(name)];
-  strcpy(nameArray, name);
-
   for (int i = acumulado; i < strlen(name); i++)
   {
-    if (nameArray[i] == '/')
-    {
-      acumulado = i ;
-     return acumulado;
-    }
+    if (name[i] == '/')
+     return i;
   }
  return strlen(name);
 }
@@ -106,26 +100,27 @@ void FS:: mkdir(const char*name){
   Directory * directory = new Directory(this->disk,superBlock->Blockroot);
     int acumulado = 0;
     int inicio = 0;
-    char* prueba;
+    char *prueba = new char();
     while (acumulado<strlen(name))
     {
-      acumulado = split(name,acumulado+1);
-      char *path ;
-      memcpy(path, &name[inicio], acumulado);
-      for (int i = 0; i < 32; i++)
+      acumulado = split(name, acumulado + 1);
+      char *path;
+      memcpy(&path[0], &name[inicio], acumulado-inicio);
+     for (int i = 0; i < 32; i++)
       {
-        if (strcmp(directory->directoryEntry[i]->nombre, path) == 0)
+        if (strcmp(&(directory->directoryEntry[i]->nombre[0]), &path[0]) == 0)
         {
           directory = new Directory(this->disk, directory->directoryEntry[i]->block);
-          inicio = strlen(path);
+          inicio +=strlen(path); 
         }
       }
-     strcpy(prueba,path);
-    }
+     strcpy(&prueba[0],&path[0]);
+     memset(path, 0, strlen(path));
+     }
     for (int i = 0; i < 32; i++)
     {
         if(directory->directoryEntry[i]->block == -1){
-        memcpy(&(directory->directoryEntry[i]->nombre), prueba, 123);
+        memcpy(&(directory->directoryEntry[i]->nombre[0]), &prueba[0], 123);
         directory->directoryEntry[i]->typeDirectory = 'D';
         directory->directoryEntry[i]->block = allocateBlock();
         directory->save();
@@ -136,6 +131,7 @@ void FS:: mkdir(const char*name){
         return;
       }
     }
+    delete prueba;
     delete superBlock;
     delete directory;
 }
@@ -149,18 +145,18 @@ void FS :: ls(const char * name){
   {
     acumulado = split(name, acumulado + 1);
     char *path;
-    memcpy(path, &name[inicio], acumulado);
+    memcpy(&path[0], &name[inicio], acumulado-inicio);
+   
     for (int i = 0; i < 32; i++)
     {
-       if (strcmp(directory->directoryEntry[i]->nombre, path) == 0)
+      if (strcmp(&(directory->directoryEntry[i]->nombre[0]), &path[0]) == 0)
       {
-      
         directory = new Directory(this->disk, directory->directoryEntry[i]->block);
-        inicio = strlen(path) ;
+        inicio += strlen(path); 
       }
     }
-  }
-
+    memset(path, 0, strlen(path));
+  } 
   for (int i = 0; i < 32; i++)
   {
     if(directory->directoryEntry[i]->block != -1){
@@ -169,6 +165,89 @@ void FS :: ls(const char * name){
       cout << " block " << directory->directoryEntry[i]->block << endl;
     }
   }
+     
     delete superBlock;
     delete directory;
 }
+void FS::createFile(const char * name){
+  SuperBlock *superBlock = new SuperBlock(this->disk);
+  Directory *directory = new Directory(this->disk, superBlock->Blockroot);
+  int acumulado = 0;
+  int inicio = 0;
+  char *prueba = new char();
+  while (acumulado < strlen(name))
+  {
+    acumulado = split(name, acumulado + 1);
+    char *path = new char();
+    memcpy(&path[0], &name[inicio], acumulado - inicio);
+    
+    for (int i = 0; i < 32; i++)
+    {
+      if (strcmp(&(directory->directoryEntry[i]->nombre[0]), &path[0]) == 0)
+      {
+        directory = new Directory(this->disk, directory->directoryEntry[i]->block);
+        inicio += strlen(path);
+      }
+    }
+    strcpy(&prueba[0], &path[0]);
+    memset(&path[0], 0, strlen(path));
+  }
+ 
+  if(split(prueba,1) != strlen(prueba)){
+    cout<<"no existe la direccion "<<prueba <<endl;
+    return;
+  }
+  for (int i = 0; i < 32; i++)
+  {
+    if (directory->directoryEntry[i]->block == -1)
+    {
+      memcpy(&(directory->directoryEntry[i]->nombre[0]), &prueba[0], 123);
+      directory->directoryEntry[i]->typeDirectory = 'F';
+      directory->directoryEntry[i]->block = allocateBlock();
+      directory->save();
+      File *file = new File(this->disk, directory->directoryEntry[i]->block);
+      memcpy(&(file->name), &prueba[0], strlen(prueba));
+      file->size = 0;
+      file->head = allocateBlock();
+      file->save();
+      break;
+    }
+  }
+  
+  delete prueba;
+  delete superBlock;
+  delete directory;
+}
+
+unsigned int FS ::getSizeFile(const char *name)
+{
+  SuperBlock *superBlock = new SuperBlock(this->disk);
+  Directory *directory = new Directory(this->disk, superBlock->Blockroot);
+  int acumulado = 0, inicio = 0;
+  char *prueba = new char();
+  while (acumulado < strlen(name))
+  {
+    acumulado = split(name, acumulado + 1);
+    char *path;
+    memcpy(&path[0], &name[inicio], acumulado - inicio);
+    for (int i = 0; i < 32; i++)
+    {
+      if (strcmp(&(directory->directoryEntry[i]->nombre[0]), &path[0]) == 0)
+      {
+          directory = new Directory(this->disk, directory->directoryEntry[i]->block);
+          inicio += strlen(path);
+      }
+    }
+    
+    strcpy(&prueba[0], &path[0]);
+    memset(path, 0, strlen(path));
+  }
+  File *file = new File(this->disk,directory->block);
+  int size = file->size;
+ 
+  delete directory;
+  delete prueba;
+  delete superBlock;
+  return size;
+}
+

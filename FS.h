@@ -9,17 +9,19 @@
 #include "Bitmap.h"
 #include "SuperBlock.h"
 #include "Directory.h"
+#include "File.h"
 
 class FS{
    Disk * disk;
 public:
     FS(Disk * disk);
-
     void format();
     unsigned int allocateBlock();
     void freeBlock(unsigned int numberBlock);
     void mkdir(const char *name);
     void ls(const char *name);
+    void createFile(const char * name);
+    unsigned int getSizeFile(const char *name);
     unsigned int getTotalFreeBlock();
     void printfBlockAllocate();
 
