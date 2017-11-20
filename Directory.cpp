@@ -38,7 +38,7 @@ void Directory :: save(){
 void Directory::format(){
     for (int i = 0; i < 32; i++)
     {
-        memset(this->directoryEntry[i]->nombre, 0, sizeof(sizeName));
+        memset(this->directoryEntry[i]->nombre, 0, sizeName);
         this->directoryEntry[i]->typeDirectory = 'E';
         this->directoryEntry[i]->block = -1;
     }

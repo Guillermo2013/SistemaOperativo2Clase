@@ -170,6 +170,7 @@ void FS :: ls(const char * name){
     delete superBlock;
     delete directory;
 }
+
 void FS::createFile(const char * name){
   SuperBlock *superBlock = new SuperBlock(this->disk);
   Directory *directory = new Directory(this->disk, superBlock->Blockroot);
@@ -217,6 +218,7 @@ void FS::createFile(const char * name){
   delete superBlock;
   delete directory;
 }
+
 unsigned int FS ::getSizeFile(const char *name)
 {
   SuperBlock *superBlock = new SuperBlock(this->disk);
@@ -250,8 +252,7 @@ unsigned int FS ::getSizeFile(const char *name)
   return file->size;
 }
 
-void FS:: writeFile(const char *name, int position, void *buffer, int size){
-
+void FS::deleteFile(const char * name){
   SuperBlock *superBlock = new SuperBlock(this->disk);
   Directory *directory = new Directory(this->disk, superBlock->Blockroot);
   int acumulado = 0, inicio = 0, block = 0;
@@ -272,18 +273,37 @@ void FS:: writeFile(const char *name, int position, void *buffer, int size){
         else
         {
           block = directory->directoryEntry[i]->block;
+          memset(directory->directoryEntry[i]->nombre, 0, sizeName);
+          directory->directoryEntry[i]->typeDirectory = 'E';
+          directory->directoryEntry[i]->block = -1;
         }
       }
     }
-
     memset(path, 0, strlen(path));
   }
+  directory->save();
   File *file = new File(this->disk, block);
-  if(file->head == 0)
-    file->head = allocateBlock();
-  
-  delete superBlock;
+  inicio = file->head;
+  char * buffer;
+  while(inicio != 0){  
+    this->disk->readBlock(inicio,buffer);
+    int nextBlock =0;
+    memcpy(&nextBlock,&buffer[4092],sizeof(int));
+    memset(buffer, 0, 4096);
+    this->disk->writeBlock(inicio,buffer);
+    freeBlock(inicio);
+    inicio = nextBlock;
+  }
+}
+
+void FS::writeFile(const char *name, int position, void *buffer, int size)
+{
+
 }
 void FS::readFile(const char *name, int position, void *buffer, int size){
 
+}
+void FS::rm(const char *name)
+{
+  
 }
