@@ -244,7 +244,7 @@ unsigned int FS ::getSizeFile(const char *name)
   }
   File *file = new File(this->disk,directory->block);
   int size = file->size;
- 
+  cout <<file->name<<endl;
   delete directory;
   delete prueba;
   delete superBlock;
