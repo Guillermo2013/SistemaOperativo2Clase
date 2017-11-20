@@ -2,8 +2,7 @@
 #include <istream>
 #include <string.h>
 #include <stdio.h>
-#include <iostream>
-#include <stdlib.h>
+
 #define directorySize 128
 #define sizeChar sizeof(char)
 #define sizeInt sizeof(int)
@@ -39,8 +38,7 @@ void Directory :: save(){
 void Directory::format(){
     for (int i = 0; i < 32; i++)
     {
-        for (int j = 0; j < 123; j++)
-            this->directoryEntry[i]->nombre[j] = NULL;
+        memset(this->directoryEntry[i]->nombre, 0, sizeof(sizeName));
         this->directoryEntry[i]->typeDirectory = 'E';
         this->directoryEntry[i]->block = -1;
     }
