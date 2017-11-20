@@ -21,6 +21,8 @@ public:
     void mkdir(const char *name);
     void ls(const char *name);
     void createFile(const char * name);
+    void writeFile(const char *name,int position,void *buffer,int size);
+    void readFile(const char *name, int position, void *buffer, int size);
     unsigned int getSizeFile(const char *name);
     unsigned int getTotalFreeBlock();
     void printfBlockAllocate();

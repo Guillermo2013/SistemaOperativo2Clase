@@ -8,7 +8,7 @@ class File
     Disk *disk;
 
   public:
-    char buffer[4096];
+    char *buffer;
     int block;
     int size;
     char *name;
