@@ -5,10 +5,10 @@ OBJ_FILE = ${SRCFILES:.cpp=.o}
 .PHONY: clean 
 
 $(TARGET): $(OBJ_FILE)
-	g++  -o $@ $(OBJ_FILE)
+	g++ -std=c++11 -o $@ $(OBJ_FILE)
 
 %.o: %.cpp 
-	g++ -c -o $@ $<
+	g++ -std=c++11 -c -o $@ $<
 
 run:
 	./$(TARGET)

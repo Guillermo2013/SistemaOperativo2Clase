@@ -3,10 +3,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#define directorySize 128
-#define sizeChar sizeof(char)
-#define sizeInt sizeof(int)
-#define sizeName directorySize -sizeChar-sizeInt
 
 DirectoryEntry::DirectoryEntry(char* buffer){
     memcpy(this->nombre,buffer,sizeName);
