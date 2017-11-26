@@ -234,7 +234,7 @@ unsigned int FS ::getSizeFile(const char *name)
   SuperBlock *superBlock = new SuperBlock(this->disk);
   Directory *directory = new Directory(this->disk, superBlock->Blockroot);
   int acumulado = 0, inicio = 0,block = 0;
-  char *path =new char();
+  char *path =(char*)malloc(0);
   memset(&path[0], 0, strlen(path));
   while (acumulado < strlen(name))
   {
@@ -254,10 +254,10 @@ unsigned int FS ::getSizeFile(const char *name)
     }
     memset(&path[0], 0, strlen(path));
  }
-  
+
   File *file = new File(this->disk, block);
   int size = file->size;
-
+  delete file;
   delete directory;
   delete superBlock;
   return size;
@@ -413,12 +413,9 @@ void FS::readFile(const char *name, int position, void *buffer, int size){
   File *file = new File(this->disk, block);
   int initialblockWrite = file->head;
    int writePositioBlock = std::ceil(+((position + size) / (4096.0 - sizeof(int))));
-  file->save();
   char *bufferBlock = (char *)malloc(4096);
-
   int inicioBlock = 0;
   int sizeInt2 = size;
-
   for (int i = 0; i < writePositioBlock; i++)
   {
     this->disk->readBlock(initialblockWrite, bufferBlock);

@@ -18,11 +18,12 @@ int main(int argc, char const *argv[])
 	fs->createFile("/root/archivo.png");
 	fs->ls("/root");
 	cout << "size file /root/archivo.png " <<fs->getSizeFile("/root/archivo.png")<<endl;
-	char *buffer = "este es una prueba de escritura de un archivo ";
+	char *buffer = "este es una prueba de escritura de un archivo";
 	fs->writeFile("/root/archivo.png", 5000, (char *)buffer, strlen(buffer));
 	char *buffer2=(char*)malloc(strlen(buffer));
 	fs->readFile("/root/archivo.png", 5000, buffer2, strlen(buffer));
 	cout<<buffer2<<endl;
+	cout << "size file /root/archivo.png " << fs->getSizeFile("/root/archivo.png") << endl;
 	disk->close();
 	delete fs;
 	delete disk;
