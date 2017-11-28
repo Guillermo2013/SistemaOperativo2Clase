@@ -97,7 +97,7 @@ void FS:: mkdir(const char*name){
   SuperBlock * superBlock = new  SuperBlock(this->disk);  
   Directory * directory = new Directory(this->disk,superBlock->Blockroot);
     int acumulado = 0, inicio = 0;
-    char *prueba = new char(), *path = new char();
+    char *prueba = (char *)malloc(0), *path = (char *)malloc(0);
     memset(path, 0, strlen(path));
     memset(prueba, 0, strlen(prueba));
     while (acumulado<strlen(name))
@@ -144,7 +144,7 @@ void FS :: ls(const char * name){
   SuperBlock *superBlock = new SuperBlock(this->disk);
   Directory *directory = new Directory(this->disk, superBlock->Blockroot);
   int acumulado = 0, inicio = 0;
-  char *path;
+  char *path=(char*)malloc(0);
   memset(&path[0], 0, strlen(path));
   while (acumulado < strlen(name))
   {
@@ -174,6 +174,7 @@ void FS :: ls(const char * name){
       cout << " block " << directory->directoryEntry[i]->block << endl;
     }
   }
+  
   delete path;
   delete superBlock;
   delete directory;
@@ -183,7 +184,7 @@ void FS::createFile(const char * name){
   SuperBlock *superBlock = new SuperBlock(this->disk);
   Directory *directory = new Directory(this->disk, superBlock->Blockroot);
   int acumulado = 0, inicio = 0;
-  char *prueba = new char(),*path = new char();
+  char *prueba = (char *)malloc(0), *path = (char *)malloc(0);
   memset(&path[0], 0, strlen(path));
   memset(&prueba[0], 0, strlen(prueba));
   while (acumulado < strlen(name))
@@ -198,8 +199,10 @@ void FS::createFile(const char * name){
         inicio += strlen(path);
       }
     }
+  
     strcpy(&prueba[0], &path[0]);
     memset(&path[0], 0, strlen(path));
+    
   }
   if(split(prueba,1) != strlen(prueba)){
     cout<<"no existe la direccion "<<prueba <<endl;
@@ -254,23 +257,29 @@ unsigned int FS ::getSizeFile(const char *name)
     }
     memset(&path[0], 0, strlen(path));
  }
-
-  File *file = new File(this->disk, block);
-  int size = file->size;
-  delete file;
-  delete directory;
-  delete superBlock;
-  return size;
+ if (block == 0)
+ {
+   cout << "la direccion no  existe " << name << endl;
+   return 0;
+}
+ File *file = new File(this->disk, block);
+ int size = file->size;
+ delete path;
+ delete file;
+ delete directory;
+ delete superBlock;
+ return size;
 }
 
 void FS::deleteFile(const char * name){
   SuperBlock *superBlock = new SuperBlock(this->disk);
   Directory *directory = new Directory(this->disk, superBlock->Blockroot);
   int acumulado = 0, inicio = 0, block = 0;
+  char *path = (char *)malloc(0);
+  memset(&path[0], 0, strlen(path));
   while (acumulado < strlen(name))
   {
     acumulado = split(name, acumulado + 1);
-    char *path = new char();
     memcpy(&path[0], &name[inicio], acumulado - inicio);
     for (int i = 0; i < 32; i++)
     {
@@ -284,18 +293,24 @@ void FS::deleteFile(const char * name){
         else
         {
           block = directory->directoryEntry[i]->block;
+          freeBlock(block);
           memset(directory->directoryEntry[i]->nombre, 0, sizeName);
           directory->directoryEntry[i]->typeDirectory = 'E';
           directory->directoryEntry[i]->block = -1;
         }
       }
     }
-    memset(path, 0, strlen(path));
+    memset(&path[0], 0, strlen(path));
+  }
+  if (block == 0)
+  {
+    cout << "la direccion no  existe " << name << endl;
+    return;
   }
   directory->save();
   File *file = new File(this->disk, block);
   inicio = file->head;
-  char * buffer;
+  char * buffer=(char*)malloc(4096);
   while(inicio != 0){  
     this->disk->readBlock(inicio,buffer);
     int nextBlock =0;
@@ -305,6 +320,11 @@ void FS::deleteFile(const char * name){
     freeBlock(inicio);
     inicio = nextBlock;
   }
+  if(inicio==0)
+    freeBlock(inicio);
+
+  delete path;
+  delete file;
   delete superBlock;
   delete directory;
   delete buffer;
@@ -339,6 +359,11 @@ void FS::writeFile(const char *name, int position, void *buffer, int size)
    memset(&path[0],0,strlen(path));
  
   }
+  if (block == 0)
+  {
+    cout << "la direccion no  existe " << name << endl;
+    return;
+  }
   File *file = new File(this->disk, block);
   if(file->head == 0)
     file->head = allocateBlock();
@@ -346,35 +371,38 @@ void FS::writeFile(const char *name, int position, void *buffer, int size)
   int writePositioBlock = std::ceil(+((position+size )/ (4096.0 - sizeof(int))));
   file->save();
   char *bufferBlock= (char*)malloc(4096);
-  int inicioBlock = 0;
-  int sizeInt2 = size;
+  int inicioBlock = 0, sizeInt2 = size;
   for (int i = 0; i < writePositioBlock; i++)
   {
      this->disk->readBlock(initialblockWrite,bufferBlock);
     if (((position) >= (i * 4096))&& ((position + sizeInt2) < (((i + 1) * 4096)-sizeof(int))))
     {
-      memcpy(&bufferBlock[position - (i * 4092)], &((char *)buffer)[inicioBlock], sizeInt2);
-      this->disk->writeBlock(initialblockWrite, bufferBlock);
+      memcpy(&bufferBlock[position - (i * 4096)], &((char *)buffer)[inicioBlock], sizeInt2);
     }
-    else if (((position) < ((i + 1) * 4096) - sizeof(int)) && ((position) > (i * 4092)) && ((position + sizeInt2) > ((i + 1) * 4096) - sizeof(int)))
+    else if (((position) < ((i + 1) * 4096) - sizeof(int)) && ((position) >= ((i * 4096))) && ((position + sizeInt2) >= ((i + 1) * 4096)))
     {
       int escribir = (((i+1)*4096)-sizeof(int))-position;
-      memcpy(&bufferBlock[position - ((i * 4096) - sizeof(int))], &((char *)buffer)[inicioBlock], escribir);
-      this->disk->writeBlock(initialblockWrite, bufferBlock);
-      sizeInt2 = sizeInt2 - escribir;
-      position += escribir;
-      inicioBlock += sizeInt2;
+
+      memcpy(&bufferBlock[position - (i * 4096)], &((char *)buffer)[inicioBlock], escribir);
+      sizeInt2 -= escribir;
+      position += (escribir+sizeof(int));
+      inicioBlock += escribir;
+      
     }
+   
     int nextBlock = 0;
     memcpy(&nextBlock,&bufferBlock[4096 - sizeof(int)],sizeof(int));
     if (nextBlock <= 0 && i < writePositioBlock-1)
     {
       nextBlock = allocateBlock();
       memcpy( &bufferBlock[4096 - sizeof(int)],&nextBlock, sizeof(int));
-      this->disk->writeBlock(initialblockWrite, bufferBlock);
+      
     }
+    this->disk->writeBlock(initialblockWrite, bufferBlock);
     initialblockWrite = nextBlock;
-    }
+    
+  }
+ 
   file->size += size;
   file->save();
   delete bufferBlock;
@@ -410,6 +438,11 @@ void FS::readFile(const char *name, int position, void *buffer, int size){
     }
     memset(&path[0], 0, strlen(path));
   }
+  if (block == 0)
+  {
+    cout << "la direccion no  existe " << name << endl;
+    return;
+  }
   File *file = new File(this->disk, block);
   int initialblockWrite = file->head;
    int writePositioBlock = std::ceil(+((position + size) / (4096.0 - sizeof(int))));
@@ -421,22 +454,22 @@ void FS::readFile(const char *name, int position, void *buffer, int size){
     this->disk->readBlock(initialblockWrite, bufferBlock);
     if (((position) >= (i * 4096)) && ((position + sizeInt2) < (((i + 1) * 4096) - sizeof(int))))
     {
-      this->disk->readBlock(initialblockWrite, bufferBlock);
-      memcpy (&((char *)buffer)[inicioBlock],&bufferBlock[position - (i * 4092)], sizeInt2);
+  
+      memcpy(&((char *)buffer)[inicioBlock], &bufferBlock[position - (i * 4096)], sizeInt2);
     }
-    else if (((position) < ((i + 1) * 4096) - sizeof(int)) && ((position) > (i * 4092)) && ((position + sizeInt2) > ((i + 1) * 4096) - sizeof(int)))
+    else if (((position) < ((i + 1) * 4096) - sizeof(int)) && ((position) >= (i * 4096)) && ((position + sizeInt2) >= ((i + 1) * 4096)))
     {
+     
       int leer = (((i + 1) * 4096) - sizeof(int)) - position;
-      this->disk->readBlock(initialblockWrite, bufferBlock);
-      memcpy(&((char *)buffer)[inicioBlock], &bufferBlock[position - (i * 4092)], sizeInt2);
-      sizeInt2 = sizeInt2 - leer;
-      position += leer;
-      inicioBlock += sizeInt2;
+      memcpy(&((char *)buffer)[inicioBlock], &bufferBlock[position - (i * 4096)], leer);
+      sizeInt2 -= leer;
+      position += (leer+sizeof(int));
+      inicioBlock += leer;
     }
     int nextBlock = 0;
     memcpy(&nextBlock, &bufferBlock[4096 - sizeof(int)], sizeof(int));
     initialblockWrite = nextBlock;
-
+    
   }
   delete bufferBlock;
   delete path;
@@ -446,5 +479,55 @@ void FS::readFile(const char *name, int position, void *buffer, int size){
 }
 void FS::rm(const char *name)
 {
-  
+  SuperBlock *superBlock = new SuperBlock(this->disk);
+  Directory *directory = new Directory(this->disk, superBlock->Blockroot);
+  int acumulado = 0, inicio = 0;
+  char *path = (char *)malloc(0);
+  memset(&path[0], 0, strlen(path));
+  while (acumulado < strlen(name))
+  {
+    acumulado = split(name, acumulado + 1);
+    memcpy(&path[0], &name[inicio], acumulado - inicio);
+    for (int i = 0; i < 32; i++)
+    {
+      if (strcmp(&(directory->directoryEntry[i]->nombre[0]), &path[0]) == 0)
+      {
+        directory = new Directory(this->disk, directory->directoryEntry[i]->block);
+        inicio += strlen(path);
+      }
+    }
+    memset(&path[0], 0, strlen(path));
+  }
+  if (inicio != strlen(name))
+  {
+    cout << "la direccion no  existe " << name << endl;
+    return;
+  }
+  for (int i = 0; i < 32; i++)
+  {
+    if (directory->directoryEntry[i]->typeDirectory == 'D' )
+    {
+      char *full_text;
+      full_text =(char*) malloc(strlen(name) + strlen(directory->directoryEntry[i]->nombre) + 1);
+      strcpy(full_text, name);
+      strcat(full_text, directory->directoryEntry[i]->nombre);
+      rm(full_text);
+      memset(directory->directoryEntry[i]->nombre, 0, sizeName);
+      directory->directoryEntry[i]->typeDirectory = 'E';
+      directory->directoryEntry[i]->block = -1;
+     
+    }
+    else if (directory->directoryEntry[i]->typeDirectory == 'F')
+    {
+      char *full_text;
+      full_text = (char *)malloc(strlen(name) + strlen(directory->directoryEntry[i]->nombre) + 1);
+      strcpy(full_text, name);
+      strcat(full_text, directory->directoryEntry[i]->nombre);
+      deleteFile(full_text);
+    }
+  }
+  freeBlock(directory->block);
+  delete path;
+  delete superBlock;
+  delete directory;
 }
